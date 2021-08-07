@@ -23,6 +23,13 @@ type Config struct {
 	Hash struct {
 		Secret string `yaml:"secret"`
 	} `yaml:"hash"`
+	SendEmail struct {
+		SMTP_HOST     string `yaml:"SMTP_HOST"`
+		SMTP_PORT     int    `yaml:"SMTP_PORT"`
+		SENDER_NAME   string `yaml:"SENDER_NAME"`
+		AUTH_EMAIL    string `yaml:"AUTH_EMAIL"`
+		AUTH_PASSWORD string `yaml:"AUTH_PASSWORD"`
+	} `yaml:"sendEmail"`
 }
 
 func GetConfig() (*Config, error) {

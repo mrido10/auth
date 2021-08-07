@@ -3,10 +3,9 @@ package dao
 import (
 	"auth/model"
 	"auth/util"
-	"fmt"
 )
 
-func GetAccount(email string, password string) (model.UserAccount, error) {
+func GetUserAccount(email string) (model.UserAccount, error) {
 	query := `SELECT userID, email, password, name, accesID, isActive FROM userAccount
 		WHERE email = ?`
 
@@ -27,9 +26,26 @@ func GetAccount(email string, password string) (model.UserAccount, error) {
 	)
 
 	if err != nil {
-		fmt.Println(err.Error())
 		return model.UserAccount{}, err
 	}
 
 	return result, nil
+}
+
+func InsertUserAccount(acc model.UserAccount) error {
+	query := `INSERT INTO userAccount(userID, email, password, name, accesID, isActive, gender)
+		VALUE(?, ?, ?, ?, ?, ?, ?)`
+
+	db, err := util.ConnectMySQL()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(query, acc.UserID, acc.Email, acc.Password, acc.Name, acc.AccesID, acc.IsActive, acc.Gender)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	return nil
 }

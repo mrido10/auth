@@ -8,6 +8,7 @@ import (
 
 func StartService() {
 	route := gin.Default()
+	route.POST("/register", controller.Register)
 	route.POST("/login", controller.Login)
 
 	if err := route.Run(":3003"); err != nil {

@@ -7,4 +7,5 @@ type UserAccount struct {
 	Name     string `json:"name"`
 	AccesID  string `json:"accesID"`
 	IsActive string `json:"isActive"`
+	Gender	 string `json:"gender"`
 }
