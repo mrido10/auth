@@ -23,9 +23,6 @@ func SendEmail(emailTo []string, emailCc []string, subject string, msg string) e
 	auth := smtp.PlainAuth("", c.SendEmail.AUTH_EMAIL, c.SendEmail.AUTH_PASSWORD, c.SendEmail.SMTP_HOST)
 	smtpAddr := fmt.Sprintf("%s:%d", c.SendEmail.SMTP_HOST, c.SendEmail.SMTP_PORT)
 
-	fmt.Println(auth)
-	fmt.Println(smtpAddr)
-
 	err = smtp.SendMail(smtpAddr, auth, c.SendEmail.AUTH_EMAIL, append(emailTo, emailCc...), []byte(body))
 	if err != nil {
 		return err

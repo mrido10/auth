@@ -49,3 +49,21 @@ func InsertUserAccount(acc model.UserAccount) error {
 	defer rows.Close()
 	return nil
 }
+
+func UpdateActivateUserAccount(userID string, email string) error {
+	query := `UPDATE userAccount SET isActive = 'YES' WHERE userID = ? AND email = ?`
+
+	db, err := util.ConnectMySQL()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	rows, err := db.Query(query, userID, email)
+
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+	return nil
+}

@@ -105,18 +105,33 @@ func Register(c *gin.Context) {
 
 	emailTo := []string{data.Email}
 	emailCc := []string{}
-	subject := "Verify your account"
-	msg := "Your account in Money Manager has been registered. To activated your account, please click this link http://localhost:3003/login"
+	subject := "Activate your account"
+	msg := "Your account has been registered. To activate your account, please click this link " +
+		fmt.Sprintf("http://localhost:3003/activate?userID=%s&email=%s", userID, acc.Email)
 
 	err = util.SendEmail(emailTo, emailCc, subject, msg)
 	if err != nil {
 		fmt.Println(err.Error())
-		util.Response(c, 300, err.Error(), nil)
+		util.Response(c, 400, err.Error(), nil)
 		return
 	}
 
 	util.Response(c, 200, "Your account has been registered, please verify your account from your email", nil)
 
+}
+
+func AccountActivate(c *gin.Context) {
+	userID := c.Query("userID")
+	email := c.Query("email")
+
+	err := dao.UpdateActivateUserAccount(userID, email)
+	if err != nil {
+		fmt.Println(err.Error())
+		util.Response(c, 400, err.Error(), nil)
+		return
+	}
+
+	util.Response(c, 200, "Your account has been activated", nil)
 }
 
 func generateUserID() string {
