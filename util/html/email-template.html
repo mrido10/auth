@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+      <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+        <style>
+            table {
+                position: absolute;
+                left: 50%;
+                transform: translate(-50%, 0);
+                width: 400px;
+                height: auto;
+                padding: 30px 20px;
+                background-color: rgb(28, 50, 90);
+                border-radius: 20px;
+                color: #fff;
+            }
+            .bbx {
+                width: auto;
+                height: 50px;
+                font-family: Arial, Helvetica, sans-serif;
+                align-items: center;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            a#ancUrl {
+                position: relative;
+                display: inline-block;
+                padding: 5px;
+                box-sizing: border-box;
+                width: 150px;
+                height: 30px;
+                background-color: #fff;
+                color: #222;
+                text-decoration: none;
+                border-radius: 15px;
+            }
+
+            @media screen and (prefers-color-scheme: dark) {
+                table {
+                    background-color: #fff;
+                    color: #222;
+                }
+                a#ancUrl {
+                    background-color: rgb(28, 50, 90);
+                    color: #fff;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <tr class="bbx">
+                <td>
+                Your account has been registered. To activate your account, please click button bellow
+                </td>
+            </tr>
+            <tr class="bbx">
+                <td>
+                <a id="ancUrl" href="{{.URL}}">Activate Account</a>
+                </td>
+            </tr>
+        </table>
+    </body>
+
+</html>

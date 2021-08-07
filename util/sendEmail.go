@@ -4,27 +4,32 @@ import (
 	"auth/config"
 	"fmt"
 	"log"
-	"net/smtp"
-	"strings"
+
+	"gopkg.in/gomail.v2"
 )
 
-func SendEmail(emailTo []string, emailCc []string, subject string, msg string) error {
+func SendEmail(emailTo string, emailCc string, subject string, msg string, template string) error {
 	c, err := config.GetConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	body := "From: " + c.SendEmail.SENDER_NAME + "\n" +
-		"To: " + strings.Join(emailTo, ",") + "\n" +
-		"Cc: " + strings.Join(emailCc, ",") + "\n" +
-		"Subject: " + subject + "\n\n" +
-		msg
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", c.SendEmail.SENDER_NAME+"<"+c.SendEmail.AUTH_EMAIL+">")
+	mailer.SetHeader("To", emailTo)
+	mailer.SetHeader("Subject", subject)
+	mailer.SetBody("text/html", msg)
 
-	auth := smtp.PlainAuth("", c.SendEmail.AUTH_EMAIL, c.SendEmail.AUTH_PASSWORD, c.SendEmail.SMTP_HOST)
-	smtpAddr := fmt.Sprintf("%s:%d", c.SendEmail.SMTP_HOST, c.SendEmail.SMTP_PORT)
+	dialer := gomail.NewDialer(
+		c.SendEmail.SMTP_HOST,
+		c.SendEmail.SMTP_PORT,
+		c.SendEmail.AUTH_EMAIL,
+		c.SendEmail.AUTH_PASSWORD,
+	)
 
-	err = smtp.SendMail(smtpAddr, auth, c.SendEmail.AUTH_EMAIL, append(emailTo, emailCc...), []byte(body))
+	err = dialer.DialAndSend(mailer)
 	if err != nil {
+		fmt.Println(err.Error())
 		return err
 	}
 

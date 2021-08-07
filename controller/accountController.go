@@ -4,10 +4,12 @@ import (
 	"auth/dao"
 	"auth/model"
 	"auth/util"
+	"bytes"
 	"fmt"
 	"log"
 	"net/http"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -103,13 +105,25 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	emailTo := []string{data.Email}
-	emailCc := []string{}
-	subject := "Activate your account"
-	msg := "Your account has been registered. To activate your account, please click this link " +
-		fmt.Sprintf("http://localhost:3003/activate?userID=%s&email=%s", userID, acc.Email)
+	linkTo := fmt.Sprintf("http://localhost:3003/activate?userID=%s&email=%s", userID, acc.Email)
 
-	err = util.SendEmail(emailTo, emailCc, subject, msg)
+	tmpl := "util/html/email-template.html"
+	t, err := template.ParseFiles(tmpl)
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	u := struct{ URL string }{URL: linkTo}
+
+	if err := t.Execute(&tpl, u); err != nil {
+		log.Println(err)
+		return
+	}
+	// msg := "Your account has been registered. To activate your account, please click this link "
+
+	subject := "Activate your account"
+	err = util.SendEmail(data.Email, "", subject, tpl.String(), tmpl)
 	if err != nil {
 		fmt.Println(err.Error())
 		util.Response(c, 400, err.Error(), nil)
