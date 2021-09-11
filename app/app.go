@@ -1,7 +1,9 @@
 package app
 
 import (
+	"auth/config"
 	"auth/controller"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -12,7 +14,11 @@ func StartService() {
 	route.POST("/login", controller.Login)
 	route.GET("/activate", controller.AccountActivate)
 
-	if err := route.Run(":3003"); err != nil {
+	c, err := config.GetConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := route.Run(":" + c.Server.ServicePort); err != nil {
 		panic(err)
 	}
 }

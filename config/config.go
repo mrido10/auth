@@ -14,8 +14,10 @@ type Config struct {
 		DbName   string `yaml:"dbName"`
 	} `yaml:"mySql"`
 	Server struct {
-		Host string `yaml:"host"`
-		Port string `yaml:"port"`
+		Host        string `yaml:"host"`
+		SQLPort     string `yaml:"sqlPort"`
+		ServicePort string `yaml:"servicePort"`
+		Protocol    string `yaml:"protocol"`
 	} `yaml:"server"`
 	Jwt struct {
 		Key string `yaml:"key"`
@@ -30,6 +32,9 @@ type Config struct {
 		AUTH_EMAIL    string `yaml:"AUTH_EMAIL"`
 		AUTH_PASSWORD string `yaml:"AUTH_PASSWORD"`
 	} `yaml:"sendEmail"`
+	EncryptDecrypt struct {
+		Key string `yaml:"key"`
+	} `yaml:"encryptDecrypt"`
 }
 
 func GetConfig() (*Config, error) {

@@ -16,7 +16,7 @@ func ConnectMySQL() (*sql.DB, error) {
 		log.Fatal(err)
 	}
 
-	conn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", c.MySql.User, c.MySql.Password, c.Server.Host, c.Server.Port, c.MySql.DbName)
+	conn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", c.MySql.User, c.MySql.Password, c.Server.Host, c.Server.SQLPort, c.MySql.DbName)
 	db, err := sql.Open("mysql", conn)
 	if err != nil {
 		return nil, err

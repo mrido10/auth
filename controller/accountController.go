@@ -1,13 +1,16 @@
 package controller
 
 import (
+	"auth/config"
 	"auth/dao"
 	"auth/model"
 	"auth/util"
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 	"text/template"
 	"time"
@@ -26,6 +29,12 @@ type regist struct {
 	RePassword string `json:"rePassword"`
 	Name       string `json:"name"`
 	Gender     string `json:"gender"`
+}
+
+type activate struct {
+	UserID string `json:"userID"`
+	Email  string `json:"email"`
+	Exp    int64  `json:"exp"`
 }
 
 func Login(c *gin.Context) {
@@ -105,25 +114,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	linkTo := fmt.Sprintf("http://localhost:3003/activate?userID=%s&email=%s", userID, acc.Email)
-
-	tmpl := "util/html/email-template.html"
-	t, err := template.ParseFiles(tmpl)
-	if err != nil {
-		log.Println(err)
-	}
-
-	var tpl bytes.Buffer
-	u := struct{ URL string }{URL: linkTo}
-
-	if err := t.Execute(&tpl, u); err != nil {
-		log.Println(err)
-		return
-	}
-	// msg := "Your account has been registered. To activate your account, please click this link "
-
-	subject := "Activate your account"
-	err = util.SendEmail(data.Email, "", subject, tpl.String(), tmpl)
+	err = sendActivationAccount(acc.Email, userID)
 	if err != nil {
 		fmt.Println(err.Error())
 		util.Response(c, 400, err.Error(), nil)
@@ -135,10 +126,40 @@ func Register(c *gin.Context) {
 }
 
 func AccountActivate(c *gin.Context) {
-	userID := c.Query("userID")
-	email := c.Query("email")
+	textEncrypted := c.Query("d")
 
-	err := dao.UpdateActivateUserAccount(userID, email)
+	jsonString, err := util.DecryptData(textEncrypted)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	jsonData := []byte(jsonString)
+
+	var data activate
+
+	err = json.Unmarshal(jsonData, &data)
+	if err != nil {
+		fmt.Println(err.Error())
+		return
+	}
+
+	userID := data.UserID
+	email := data.Email
+	intExp := data.Exp
+
+	sec := intExp / 1000
+	msec := intExp % 1000
+	tExp := time.Unix(sec, msec*int64(time.Millisecond))
+
+	tNow := time.Now()
+
+	if !tNow.Before(tExp) {
+		util.Response(c, 400, "Account activation has expired", nil)
+		return
+	}
+
+	err = dao.UpdateActivateUserAccount(userID, email)
 	if err != nil {
 		fmt.Println(err.Error())
 		util.Response(c, 400, err.Error(), nil)
@@ -146,6 +167,48 @@ func AccountActivate(c *gin.Context) {
 	}
 
 	util.Response(c, 200, "Your account has been activated", nil)
+}
+
+func sendActivationAccount(email string, userID string) error {
+	conf, err := config.GetConfig()
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+
+	exp := time.Now().Add(time.Second*60).UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond)) // time in milis
+	param := fmt.Sprintf(`{"userID": "%v", "email":"%v", "exp": %v}`, userID, email, exp)
+	paramEncrypted, err := util.EncryptData(param)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	linkTo := fmt.Sprintf("%s://%s:%s/activate?d=%v", conf.Server.Protocol, conf.Server.Host, conf.Server.ServicePort, url.QueryEscape(paramEncrypted))
+	fmt.Println(linkTo)
+
+	tmpl := "util/html/email-template.html"
+	t, err := template.ParseFiles(tmpl)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var tpl bytes.Buffer
+	u := struct{ URL string }{URL: linkTo}
+
+	if err := t.Execute(&tpl, u); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	subject := "Activate your account"
+	err = util.SendEmail(email, "", subject, tpl.String(), tmpl)
+	if err != nil {
+		fmt.Println(err.Error())
+		return err
+	}
+	return nil
 }
 
 func generateUserID() string {
