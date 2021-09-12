@@ -12,6 +12,7 @@ func StartService() {
 	route := gin.Default()
 	route.POST("/register", controller.Register)
 	route.POST("/login", controller.Login)
+	route.POST("/resendActivation", controller.ReSendActivation)
 	route.GET("/activate", controller.AccountActivate)
 
 	c, err := config.GetConfig()

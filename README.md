@@ -8,7 +8,9 @@ mySql:
   dbName: yourDB
 server:
   host: localhost
-  port: 3306
+  sqlPort: 3306
+  servicePort: 3003
+  protocol: http
 jwt:
   key: yourKey
 hash:
@@ -19,4 +21,6 @@ sendEmail:
   SENDER_NAME: Your Name
   AUTH_EMAIL: yourEmail@mail.com
   AUTH_PASSWORD: yourEmailPassword
+encryptDecrypt:
+  key: yourKey
 ```
