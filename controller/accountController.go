@@ -32,6 +32,10 @@ type activate struct {
 	Exp    int64  `json:"exp"`
 }
 
+type Token struct {
+	Auth string `json:"authorization"`
+}
+
 func Login(c *gin.Context) {
 	var data login
 	if err := c.ShouldBindJSON(&data); err != nil {
@@ -62,8 +66,10 @@ func Login(c *gin.Context) {
 	}
 
 	token := util.GenerateToken(acc.Name, acc.UserID, acc.AccesID)
-	c.Writer.Header().Set("authorization", token)
-	util.Response(c, http.StatusOK, "succes", nil)
+
+	var body Token
+	body.Auth = token
+	util.Response(c, http.StatusOK, "succes", body)
 }
 
 func Register(c *gin.Context) {
