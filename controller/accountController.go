@@ -4,6 +4,7 @@ import (
 	"auth/dao"
 	"auth/model"
 	"auth/util"
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
@@ -48,20 +49,24 @@ func Login(c *gin.Context) {
 	acc, err := dao.GetUserAccount(data.Email)
 
 	if err != nil {
-		fmt.Println(err.Error())
+		if err == sql.ErrNoRows {
+			log.Print("Wrong Email or Password!")
+			util.Response(c, http.StatusUnauthorized, "Wrong Email or Password!", nil)
+			return
+		}
 		util.Response(c, 400, err.Error(), nil)
 		return
 	}
 
 	if pwd != acc.Password {
-		log.Print("unauthorized")
-		util.Response(c, http.StatusUnauthorized, "unauthorized", nil)
+		log.Print("Unauthorized")
+		util.Response(c, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 
 	if acc.IsActive != "YES" {
-		fmt.Print("your account is not active")
-		util.Response(c, http.StatusUnauthorized, "your account is not active", nil)
+		fmt.Print("Your account is not active")
+		util.Response(c, http.StatusUnauthorized, "Your account is not active", nil)
 		return
 	}
 
@@ -69,7 +74,7 @@ func Login(c *gin.Context) {
 
 	var body Token
 	body.Auth = token
-	util.Response(c, http.StatusOK, "succes", body)
+	util.Response(c, http.StatusOK, "Succes", body)
 }
 
 func Register(c *gin.Context) {
