@@ -35,6 +35,9 @@ type Config struct {
 	EncryptDecrypt struct {
 		Key string `yaml:"key"`
 	} `yaml:"encryptDecrypt"`
+	Postgres struct {
+		Address string `yaml:"address"`
+	} `yaml:"postgres"`
 }
 
 func GetConfig() (*Config, error) {

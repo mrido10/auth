@@ -38,10 +38,7 @@ func AccountActivate(c *gin.Context) {
 		return
 	}
 
-	userID := data.UserID
-	email := data.Email
 	intExp := data.Exp
-
 	sec := intExp / 1000
 	msec := intExp % 1000
 	tExp := time.Unix(sec, msec*int64(time.Millisecond))
@@ -53,7 +50,7 @@ func AccountActivate(c *gin.Context) {
 		return
 	}
 
-	err = dao.UpdateActivateUserAccount(userID, email)
+	err = dao.UpdateActivateUserAccount(data.ID, data.Email)
 	if err != nil {
 		fmt.Println(err.Error())
 		util.Response(c, 400, err.Error(), nil)
@@ -78,14 +75,14 @@ func ReSendActivation(c *gin.Context) {
 		return
 	}
 
-	if acc.IsActive == "YES" {
+	if acc.IsActive.Bool {
 		msg := "You account has been activated, you don't need activate again"
 		fmt.Println(msg)
 		util.Response(c, 200, msg, nil)
 		return
 	}
 
-	err = SendActivationAccount(acc.Email, acc.UserID)
+	err = SendActivationAccount(acc.Email.String, acc.Id.Int64)
 	if err != nil {
 		fmt.Println(err.Error())
 		util.Response(c, 400, err.Error(), nil)
@@ -95,7 +92,7 @@ func ReSendActivation(c *gin.Context) {
 	util.Response(c, 200, "Resend activation account success, please check your email in 2 minute", nil)
 }
 
-func SendActivationAccount(email string, userID string) error {
+func SendActivationAccount(email string, accountID int64) error {
 	conf, err := config.GetConfig()
 	if err != nil {
 		fmt.Println(err)
@@ -103,7 +100,7 @@ func SendActivationAccount(email string, userID string) error {
 	}
 
 	exp := time.Now().Add(time.Second*120).UnixNano() / (int64(time.Millisecond) / int64(time.Nanosecond)) // time in milis
-	param := fmt.Sprintf(`{"userID": "%v", "email":"%v", "exp": %v}`, userID, email, exp)
+	param := fmt.Sprintf(`{"id": "%v", "email":"%v", "exp": %v}`, accountID, email, exp)
 	paramEncrypted, err := util.EncryptData(param)
 	if err != nil {
 		log.Println(err)

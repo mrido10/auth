@@ -1,11 +1,15 @@
 package model
 
+import "database/sql"
+
 type UserAccount struct {
-	UserID   string `json:"userID"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Name     string `json:"name"`
-	AccesID  string `json:"accesID"`
-	IsActive string `json:"isActive"`
-	Gender	 string `json:"gender"`
+	Id       sql.NullInt64  `json:"id"`
+	Email    sql.NullString `json:"email"`
+	Password sql.NullString `json:"password"`
+	Name     sql.NullString `json:"name"`
+	Gender   sql.NullString `json:"gender"`
+	AccessID sql.NullInt64  `json:"accessID"`
+	Created  sql.NullTime   `json:"created"`
+	Modify   sql.NullTime   `json:"modify"`
+	IsActive sql.NullBool   `json:"isActive"`
 }

@@ -6,12 +6,9 @@ import (
 	"auth/util"
 	"database/sql"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
-	"strings"
-	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 type login struct {
@@ -25,12 +22,13 @@ type regist struct {
 	RePassword string `json:"rePassword"`
 	Name       string `json:"name"`
 	Gender     string `json:"gender"`
+	AccessID   int64  `json:"accessId"`
 }
 
 type activate struct {
-	UserID string `json:"userID"`
-	Email  string `json:"email"`
-	Exp    int64  `json:"exp"`
+	ID    int64  `json:"id"`
+	Email string `json:"email"`
+	Exp   int64  `json:"exp"`
 }
 
 type Token struct {
@@ -58,19 +56,24 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if pwd != acc.Password {
+	if pwd != acc.Password.String {
 		log.Print("Unauthorized")
 		util.Response(c, http.StatusUnauthorized, "Unauthorized", nil)
 		return
 	}
 
-	if acc.IsActive != "YES" {
+	if !acc.IsActive.Bool {
 		fmt.Print("Your account is not active")
 		util.Response(c, http.StatusUnauthorized, "Your account is not active", nil)
 		return
 	}
 
-	token := util.GenerateToken(acc.Name, acc.UserID, acc.AccesID)
+	access, err := dao.GetAccess(acc.AccessID.Int64)
+	if err != nil {
+		util.Response(c, 400, err.Error(), nil)
+		return
+	}
+	token := util.GenerateToken(acc.Name.String, acc.Id.Int64, access.AccessCode.String)
 
 	var body Token
 	body.Auth = token
@@ -94,22 +97,18 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	if err.Error() != "sql: no rows in result set" {
+	if err.Error() != sql.ErrNoRows.Error() {
 		fmt.Println(err.Error())
 		util.Response(c, 400, err.Error(), nil)
 		return
 	}
-
-	userID := generateUserID()
-
 	acc := model.UserAccount{
-		UserID:   userID,
-		Email:    data.Email,
-		Password: pwd,
-		Name:     data.Name,
-		AccesID:  "cl001",
-		IsActive: "NO",
-		Gender:   data.Gender,
+		Email:    sql.NullString{String: data.Email, Valid: true},
+		Password: sql.NullString{String: pwd, Valid: true},
+		Name:     sql.NullString{String: data.Name, Valid: true},
+		AccessID: sql.NullInt64{Int64: data.AccessID, Valid: true},
+		IsActive: sql.NullBool{Bool: false, Valid: true},
+		Gender:   sql.NullString{String: data.Gender, Valid: true},
 	}
 
 	err = dao.InsertUserAccount(acc)
@@ -120,7 +119,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
-	err = SendActivationAccount(acc.Email, userID)
+	err = SendActivationAccount(acc.Email.String, acc.Id.Int64)
 	if err != nil {
 		fmt.Println(err.Error())
 		util.Response(c, 400, err.Error(), nil)
@@ -129,16 +128,4 @@ func Register(c *gin.Context) {
 
 	util.Response(c, 200, "Your account has been registered, please verify your account from your email in 2 minute", nil)
 
-}
-
-func generateUserID() string {
-	t := time.Now()
-	tString := t.Format(("2006-01-02 15:04:05.000"))
-	tString = strings.Replace(tString, "-", "", 2)
-	tString = strings.Replace(tString, " ", "", 1)
-	tString = strings.Replace(tString, ":", "", 2)
-	tString = strings.Replace(tString, ".", "", 1)
-	tString = tString[2 : len(tString)-1]
-
-	return "MM" + tString
 }

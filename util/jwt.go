@@ -10,12 +10,12 @@ import (
 
 type authClaims struct {
 	Name    string `json:"name"`
-	Id      string `json:"id"`
+	Id      int64  `json:"id"`
 	LoginAs string `json:"loginAs"`
 	jwt.StandardClaims
 }
 
-func GenerateToken(name string, id string, loginAs string) string {
+func GenerateToken(name string, id int64, loginAs string) string {
 	claims := &authClaims{
 		name,
 		id,
