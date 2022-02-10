@@ -2,7 +2,7 @@ package app
 
 import (
 	"auth/config"
-	"auth/controller"
+	"auth/service"
 	"log"
 	"time"
 
@@ -21,10 +21,10 @@ func StartService() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	route.POST("/register", controller.Register)
-	route.POST("/login", controller.Login)
-	route.POST("/resendActivation", controller.ReSendActivation)
-	route.GET("/activate", controller.AccountActivate)
+	route.POST("/register", service.RegisterService{}.Register)
+	route.POST("/login", service.Login)
+	route.POST("/resendActivation", service.ReSendActivation)
+	route.GET("/activate", service.AccountActivate)
 
 	c, err := config.GetConfig()
 	if err != nil {

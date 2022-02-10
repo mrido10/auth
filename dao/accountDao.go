@@ -24,6 +24,18 @@ func GetUserAccount(email string) (model.UserAccount, error) {
 	return result, nil
 }
 
+func GetCountUserAccount(email string) (count int, err error) {
+	query := fmt.Sprintf(`SELECT COUNT(email) FROM user_account WHERE email = $1`)
+	db, err := util.ConnectPostgreSQL()
+	if err != nil {
+		return
+	}
+	defer db.Close()
+
+	err = db.QueryRow(query, email).Scan(&count)
+	return
+}
+
 func InsertUserAccount(acc model.UserAccount) error {
 	query := fmt.Sprintf(`INSERT INTO user_account (email, password, name, gender, acces_id, is_active)
 		VALUES ($1, $2, $3, $4, $5, $6)`)
