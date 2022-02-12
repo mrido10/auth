@@ -8,14 +8,8 @@ import (
 )
 
 type Config struct {
-	MySql struct {
-		User     string `yaml:"user"`
-		Password string `yaml:"password"`
-		DbName   string `yaml:"dbName"`
-	} `yaml:"mySql"`
 	Server struct {
 		Host        string `yaml:"host"`
-		SQLPort     string `yaml:"sqlPort"`
 		ServicePort string `yaml:"servicePort"`
 		Protocol    string `yaml:"protocol"`
 	} `yaml:"server"`

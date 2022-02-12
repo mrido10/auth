@@ -14,7 +14,7 @@ func StartService() {
 	route := gin.Default()
 	route.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST"},
+		AllowMethods:     []string{"GET", "POST", "PUT"},
 		AllowHeaders:     []string{"*"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -24,7 +24,7 @@ func StartService() {
 	route.POST("/register", service.RegisterService{}.Register)
 	route.POST("/login", service.LoginService{}.Login)
 	route.POST("/resendActivation", service.ActivationService{}.ReSendActivation)
-	route.GET("/activate", service.ActivationService{}.AccountActivate)
+	route.PUT("/activate", service.ActivationService{}.AccountActivate)
 
 	c, err := config.GetConfig()
 	if err != nil {
