@@ -7,7 +7,7 @@ import (
 )
 
 func GetUserAccount(email string) (model.UserAccount, error) {
-	query := fmt.Sprintf(`SELECT id, email, password, is_active FROM user_account WHERE email = $1`)
+	query := fmt.Sprintf(`SELECT id, email, password, is_active, acces_id FROM user_account WHERE email = $1`)
 	db, err := util.ConnectPostgreSQL()
 	if err != nil {
 		return model.UserAccount{}, err
@@ -15,7 +15,7 @@ func GetUserAccount(email string) (model.UserAccount, error) {
 	defer db.Close()
 
 	var result model.UserAccount
-	err = db.QueryRow(query, email).Scan(&result.Id, &result.Email, &result.Password, &result.IsActive)
+	err = db.QueryRow(query, email).Scan(&result.Id, &result.Email, &result.Password, &result.IsActive, &result.AccessID)
 
 	if err != nil {
 		return model.UserAccount{}, err

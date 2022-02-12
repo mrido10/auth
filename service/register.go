@@ -8,7 +8,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/gin-gonic/gin"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -22,36 +22,38 @@ func (auth RegisterService) Register(context *gin.Context) {
 	if err != nil {
 		return
 	}
-	err = auth.authService.checkUserAccount()
+	err = auth.checkUserAccount()
 	if err != nil {
 		return
 	}
 
-	err = auth.authService.insertDataRegister()
+	err = auth.insertDataRegister()
 	if err != nil {
 		return
 	}
 
-	util.Response(auth.authService.Context, 200, "Your account has been registered, please verify your account from your email in 2 minute", nil)
+	util.Response(auth.authService.Context, 200,
+		"Your account has been registered, please verify your account from your email in 2 minute", nil)
+	log.Info("Register Success")
 }
 
-func (auth authService) checkUserAccount() (err error) {
+func (auth RegisterService) checkUserAccount() (err error) {
 	count, err := dao.GetCountUserAccount(register.Email)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		util.Response(auth.Context, http.StatusFound, err.Error(), nil)
 		return
 	}
 	if count > 0 {
 		err = errors.New("email already exist")
-		log.Println(err.Error())
+		log.Error(err.Error())
 		util.Response(auth.Context, http.StatusFound, err.Error(), nil)
 		return
 	}
 	return
 }
 
-func (auth authService) insertDataRegister() (err error){
+func (auth RegisterService) insertDataRegister() (err error){
 	password := util.GenerateHmacSHA256(register.Password)
 	acc := model.UserAccount{
 		Email:    sql.NullString{String: register.Email, Valid: true},
@@ -64,14 +66,14 @@ func (auth authService) insertDataRegister() (err error){
 
 	err = dao.InsertUserAccount(acc)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		util.Response(auth.Context, 400, err.Error(), nil)
 		return
 	}
 
 	err = SendActivationAccount(acc.Email.String, acc.Id.Int64)
 	if err != nil {
-		log.Println(err.Error())
+		log.Error(err.Error())
 		util.Response(auth.Context, 400, err.Error(), nil)
 		return
 	}

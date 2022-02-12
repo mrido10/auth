@@ -22,7 +22,7 @@ func StartService() {
 	}))
 
 	route.POST("/register", service.RegisterService{}.Register)
-	route.POST("/login", service.Login)
+	route.POST("/login", service.LoginService{}.Login)
 	route.POST("/resendActivation", service.ReSendActivation)
 	route.GET("/activate", service.AccountActivate)
 
