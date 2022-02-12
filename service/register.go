@@ -71,7 +71,7 @@ func (auth RegisterService) insertDataRegister() (err error){
 		return
 	}
 
-	err = SendActivationAccount(acc.Email.String, acc.Id.Int64)
+	err = auth.authService.SendActivationAccount(acc.Email.String, acc.Id.Int64)
 	if err != nil {
 		log.Error(err.Error())
 		util.Response(auth.Context, 400, err.Error(), nil)
